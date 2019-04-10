@@ -16,9 +16,12 @@ case class wineQuality(
 )
 
 object SparkGames extends App {
+  val groupSize = 25
+
   val wineQualityRedLines = scala.io.Source.fromResource("winequality-red.csv").getLines()
 
-  val wineQualityRedObjVec = wineQualityRedLines.toVector.tail.map {
+  wineQualityRedLines.next
+  val wineQualityRedObjVec = wineQualityRedLines.map {
     wq =>
       val wqVals = wq.split(";").map(_.trim)
       wineQuality(
@@ -37,5 +40,13 @@ object SparkGames extends App {
       )
   }
 
-  wineQualityRedObjVec.take(10).map(println)
+  val pHMean = wineQualityRedObjVec.grouped(groupSize).foldLeft(RunningMean()) {
+    case (acc, batch) => 
+      val accNew = acc.updateMean(batch.map(_.pH).toVector)
+      println(accNew)
+      accNew
+  }
+
+  wineQualityRedObjVec.take(10).toVector.map(println)
+  println(s"Mean pH: ${pHMean}")
 }
