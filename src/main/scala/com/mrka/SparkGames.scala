@@ -1,52 +1,52 @@
 package com.mrka
 
-case class wineQuality(
-  fixedAcidity: Double,
-  volatileAcidity: Double,
-  citricAcid: Double,
-  residualSugar: Double,
-  chlorides: Double,
-  freeSulfurDioxide: Double,
-  totalSulfurDioxide: Double,
-  density: Double,
-  pH: Double,
-  sulphates: Double,
-  alcohol: Double,
-  quality: Double
-)
 
 object SparkGames extends App {
   val groupSize = 25
 
-  val wineQualityRedLines = scala.io.Source.fromResource("winequality-red.csv").getLines()
+  val redWineQualityLines = scala.io.Source.fromResource("winequality-red.csv").getLines()
+  val redFirstLine = redWineQualityLines.next.split(";").toVector
+  val redModelStart = LinearModel((0 to redFirstLine.length).map(_ => 0.0).toVector, 0.0001)
+  val redWineQualityVec = WineQuality.fromLines(redWineQualityLines)
 
-  wineQualityRedLines.next
-  val wineQualityRedObjVec = wineQualityRedLines.map {
-    wq =>
-      val wqVals = wq.split(";").map(_.trim)
-      wineQuality(
-        wqVals(0).toDouble, 
-        wqVals(1).toDouble, 
-        wqVals(2).toDouble, 
-        wqVals(3).toDouble, 
-        wqVals(4).toDouble, 
-        wqVals(5).toDouble, 
-        wqVals(6).toDouble, 
-        wqVals(7).toDouble, 
-        wqVals(8).toDouble, 
-        wqVals(9).toDouble, 
-        wqVals(10).toDouble, 
-        wqVals(11).toDouble
-      )
+
+  val (redTrainedModel, redTestSet) = redWineQualityVec.grouped(groupSize).foldLeft((redModelStart, Vector.empty[WineQuality])) {
+    case ((currModel, currTestSet), batch) if batch.length > 1 => 
+      val trainSet = batch.tail
+      val testSet = batch.head +: currTestSet
+      val updatedModel = LinearModel.updateModel(currModel, trainSet.map(_.xVec).toVector, batch.map(_.y).toVector)
+      val testError = LinearModel.calcTestError(updatedModel, testSet.map(_.xVec).toVector, testSet.map(_.y).toVector)
+      println(testError)
+      (updatedModel, testSet)
+
+    case ((currModel, currTestSet), _) => (currModel, currTestSet)
   }
+  println(redTrainedModel)
 
-  val pHMean = wineQualityRedObjVec.grouped(groupSize).foldLeft(RunningMean()) {
-    case (acc, batch) => 
-      val accNew = acc.updateMean(batch.map(_.pH).toVector)
-      println(accNew)
-      accNew
+  val whiteWineQualityLines = scala.io.Source.fromResource("winequality-white.csv").getLines()
+  val whiteFirstLine = whiteWineQualityLines.next.split(";").toVector
+  val whiteModelStart = LinearModel((0 to whiteFirstLine.length).map(_ => 0.0).toVector, 0.00005)
+  val whiteWineQualityVec = WineQuality.fromLines(whiteWineQualityLines)
+
+
+  val (whiteTrainedModel, whiteTestSet) = whiteWineQualityVec.grouped(groupSize).foldLeft((whiteModelStart, Vector.empty[WineQuality])) {
+    case ((currModel, currTestSet), batch) if batch.length > 1 => 
+      val trainSet = batch.tail
+      val testSet = batch.head +: currTestSet
+      val updatedModel = LinearModel.updateModel(currModel, trainSet.map(_.xVec).toVector, batch.map(_.y).toVector)
+      val testError = LinearModel.calcTestError(updatedModel, testSet.map(_.xVec).toVector, testSet.map(_.y).toVector)
+      println(testError)
+      (updatedModel, testSet)
+
+    case ((currModel, currTestSet), _) => (currModel, currTestSet)
   }
+  println(whiteTrainedModel)
 
-  wineQualityRedObjVec.take(10).toVector.map(println)
-  println(s"Mean pH: ${pHMean}")
+
+  //val pHMean = wineQualityRedObjVec.grouped(groupSize).foldLeft(RunningMean()) {
+    //case (acc, batch) => 
+      //val accNew = acc.updateMean(batch.map(_.pH).toVector)
+      //println(accNew)
+      //accNew
+  //}
 }
