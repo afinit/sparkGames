@@ -12,6 +12,7 @@ more explanations to follow
 ## Command Line Help ##  
 
 ```
+sbt "runMain com.mrka.SparkGames --help"
 Usage: SparkGames [options]
 
   --runRedWine         Run Red Wine Linear Model (from file iterator)
