@@ -13,6 +13,6 @@ resolvers ++= Seq(
 lazy val root = (project in file("."))
   .settings(
     name := "sparkGames",
-    libraryDependencies ++= deps.value
+    libraryDependencies ++= deps
   )
 
