@@ -4,7 +4,7 @@ Playing around with Spark.. starting with UCI datasets
 
 This started out with the goal of playing around with Spark, but quickly got sidetracked for a bit. I built a few things to play with streaming ideas here.
 
-- `LinearModel`: A simple linear model object trained with gradient descent so that I can complete updates to the model.
+- `LinearModel`: A simple linear model object trained with gradient descent so that I can complete updates to the model. A handful of tests are included for the LinearModel
 - `RunningMean`: Simple mean aggregator
 
 more explanations to follow
@@ -12,6 +12,8 @@ more explanations to follow
 ## Command Line Help ##  
 
 ```
+sbt "runMain com.mrka.SparkGames --help"
+
 Usage: SparkGames [options]
 
   --runRedWine         Run Red Wine Linear Model (from file iterator)
